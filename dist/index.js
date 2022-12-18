@@ -2751,7 +2751,7 @@ echo "$tests"
 const outputTest = (result) => {
     if (result.status == 1) {
         core.setFailed('Failed');
-        core.error(result.stdout.toString());
+        core.info(result.stdout.toString());
     }
     else {
         core.info(result.stdout.toString());
