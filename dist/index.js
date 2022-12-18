@@ -2795,6 +2795,9 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
         let result = (0, child_process_1.spawnSync)(goTestShell, { shell: '/bin/bash' });
         outputTest(result);
         core.endGroup();
+        if (result.status == 1) {
+            return;
+        }
         // go text coverage
         core.startGroup('test coverage');
         const coverageShell = buildCoverageShell();

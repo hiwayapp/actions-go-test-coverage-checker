@@ -81,6 +81,10 @@ const run = async () => {
     outputTest(result);
     core.endGroup();
 
+    if (result.status == 1) {
+      return;
+    }
+
     // go text coverage
     core.startGroup('test coverage');
     const coverageShell = buildCoverageShell();
