@@ -17,6 +17,10 @@ inputs:
     description: "`error` or `info`"
     default: "error"
     required: false
+  slackWebhookUrl:
+    description: ""
+    default: ""
+    required: false
 runs:
   using: "node16"
   main: "dist/index.js"

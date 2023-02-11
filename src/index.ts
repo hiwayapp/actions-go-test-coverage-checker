@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
+import { IncomingWebhook } from '@slack/webhook';
 
 const COL_FILE_PATH = 0;
 const COL_FUNC_NAME = 1;
@@ -41,16 +42,28 @@ const outputTest = (result: SpawnSyncReturns<Buffer>): void => {
   }
 }
 
-const outputCoverage = (result: CoverResult): void => {
+const buildLowerThanThresholdLog = (coverage: number, threshold: string): string[] => {
+  return [
+    "Coverage is lower than threshold.",
+    `Total: ${coverage}%`,
+    `Threshold: ${threshold}%`
+  ];
+}
+
+const buildTotalInfoLog = (coverage: number): string => {
+  return `Total: ${coverage}%`;
+}
+
+const buildFuncCoverageLog = (path: string, funcName: string, coverage: number): string => {
+  return `path: ${path}, funcName: ${funcName}, coverage: ${coverage}%`;
+}
+
+const outputCoverage = (result: CoverResult): string[] => {
   if (result.path == TOTAL_ROW) {
     const threshold = core.getInput('threshold', {required: false});
     if (result.coverage < Number(threshold)) {
       const logLevel = core.getInput('logLevel', {required: false});
-      var logs = [
-        "Coverage is lower than threshold.",
-        `Total: ${result.coverage}%`,
-        `Threshold: ${threshold}%`
-      ];
+      var logs = buildLowerThanThresholdLog(result.coverage, threshold);
       if (logLevel == "error") {
         logs.forEach(function(log) {
           core.setFailed(log);
@@ -60,12 +73,26 @@ const outputCoverage = (result: CoverResult): void => {
           core.info(log);
         });
       }
+      return logs;
     } else {
-      core.info(`Total: ${result.coverage}%`);
+      var log = buildTotalInfoLog(result.coverage);
+      core.info(log);
+      return [log];
     }
   } else {
-    core.info(`path: ${result.path}, funcName: ${result.funcName}, coverage: ${result.coverage}%`);
+    var log = buildFuncCoverageLog(result.path, result.funcName, result.coverage);
+    core.info(log);
+    return [log];
   }
+}
+
+const notifySlack = (slackWebhookUrl: string, message: string): void => {
+  const webhook = new IncomingWebhook(slackWebhookUrl);
+  (async () => {
+    await webhook.send({
+      text: message,
+    });
+  })();
 }
 
 const parseCoverResult = (result: string): CoverResult => {
@@ -110,6 +137,20 @@ const run = async () => {
       }
     }
     core.endGroup();
+
+    const slackWebhookUrl = core.getInput('slackWebhookUrl', {required: false});
+    if (slackWebhookUrl != "") {
+      var logs: string[] = [];
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (row != "") {
+          const coverResult = parseCoverResult(row);
+          logs = logs.concat(outputCoverage(coverResult));
+        }
+      }
+      const message = logs.join("\n");
+      notifySlack(slackWebhookUrl, message);
+    }
   } catch (error: any) {
     core.setFailed(error.status);
     core.setFailed(error.message);
