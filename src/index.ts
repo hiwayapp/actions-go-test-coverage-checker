@@ -4,7 +4,7 @@ import {spawnSync, SpawnSyncReturns} from 'child_process';
 const COL_FILE_PATH = 0;
 const COL_FUNC_NAME = 1;
 const COL_COVERAGE = 2;
-const TOTAL_PATH_KEY = "total:";
+const TOTAL_ROW = "total:";
 
 interface CoverResult {
   path: string;
@@ -42,12 +42,24 @@ const outputTest = (result: SpawnSyncReturns<Buffer>): void => {
 }
 
 const outputCoverage = (result: CoverResult): void => {
-  if (result.path == TOTAL_PATH_KEY) {
+  if (result.path == TOTAL_ROW) {
     const threshold = core.getInput('threshold', {required: false});
     if (result.coverage < Number(threshold)) {
-      core.setFailed(`Coverage is lower than threshold.`);
-      core.setFailed(`Total: ${result.coverage}%`);
-      core.setFailed(`Threshold: ${threshold}%`);
+      const logLevel = core.getInput('logLevel', {required: false});
+      var logs = [
+        "Coverage is lower than threshold.",
+        `Total: ${result.coverage}%`,
+        `Threshold: ${threshold}%`
+      ];
+      if (logLevel == "error") {
+        logs.forEach(function(log) {
+          core.setFailed(log);
+        });
+      } else {
+        logs.forEach(function(log) {
+          core.info(log);
+        });
+      }
     } else {
       core.info(`Total: ${result.coverage}%`);
     }

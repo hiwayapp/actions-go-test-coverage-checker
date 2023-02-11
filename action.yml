@@ -13,6 +13,10 @@ inputs:
     description: "total coverage threshold"
     default: "80"
     required: false
+  logLevel:
+    description: "`error` or `info`"
+    default: "error"
+    required: false
 runs:
   using: "node16"
   main: "dist/index.js"
