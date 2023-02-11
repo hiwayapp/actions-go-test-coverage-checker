@@ -2731,7 +2731,7 @@ const child_process_1 = __nccwpck_require__(81);
 const COL_FILE_PATH = 0;
 const COL_FUNC_NAME = 1;
 const COL_COVERAGE = 2;
-const TOTAL_PATH_KEY = "total:";
+const TOTAL_ROW = "total:";
 const buildGoTestShell = () => {
     const path = core.getInput('path', { required: false });
     return `#!/bin/bash
@@ -2758,12 +2758,25 @@ const outputTest = (result) => {
     }
 };
 const outputCoverage = (result) => {
-    if (result.path == TOTAL_PATH_KEY) {
+    if (result.path == TOTAL_ROW) {
         const threshold = core.getInput('threshold', { required: false });
         if (result.coverage < Number(threshold)) {
-            core.setFailed(`Coverage is lower than threshold.`);
-            core.setFailed(`Total: ${result.coverage}%`);
-            core.setFailed(`Threshold: ${threshold}%`);
+            const logLevel = core.getInput('logLevel', { required: false });
+            var logs = [
+                "Coverage is lower than threshold.",
+                `Total: ${result.coverage}%`,
+                `Threshold: ${threshold}%`
+            ];
+            if (logLevel == "error") {
+                logs.forEach(function (log) {
+                    core.setFailed(log);
+                });
+            }
+            else {
+                logs.forEach(function (log) {
+                    core.info(log);
+                });
+            }
         }
         else {
             core.info(`Total: ${result.coverage}%`);
