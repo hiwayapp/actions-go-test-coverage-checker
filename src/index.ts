@@ -96,7 +96,13 @@ const notifySlack = (slackWebhookUrl: string, message: string, isBelow: boolean)
     const webhook = new IncomingWebhook(slackWebhookUrl);
     (async () => {
       await webhook.send({
-        text: message,
+        text: "Test coverage",
+        attachments: [
+          {
+            color: isBelow ? 'danger' : 'good',
+            text: message,
+          }
+        ]
       });
     })();
   } catch (error: any) {

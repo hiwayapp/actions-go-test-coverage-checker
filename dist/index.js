@@ -5973,7 +5973,13 @@ const notifySlack = (slackWebhookUrl, message, isBelow) => {
         const webhook = new webhook_1.IncomingWebhook(slackWebhookUrl);
         (() => __awaiter(void 0, void 0, void 0, function* () {
             yield webhook.send({
-                text: message,
+                text: "Test coverage",
+                attachments: [
+                    {
+                        color: isBelow ? 'danger' : 'good',
+                        text: message,
+                    }
+                ]
             });
         }))();
     }
