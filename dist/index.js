@@ -5970,10 +5970,19 @@ const outputRowCoverage = (result) => {
 };
 const notifySlack = (slackWebhookUrl, message, isBelow) => {
     try {
+        const runUrl = core.getInput('actionsRunUrl', { required: false });
         const webhook = new webhook_1.IncomingWebhook(slackWebhookUrl);
         (() => __awaiter(void 0, void 0, void 0, function* () {
             yield webhook.send({
-                text: "Test coverage",
+                blocks: [
+                    {
+                        type: 'section',
+                        text: {
+                            type: 'mrkdwn',
+                            text: `<${runUrl}|Test coverage>`,
+                        },
+                    },
+                ],
                 attachments: [
                     {
                         color: isBelow ? 'danger' : 'good',

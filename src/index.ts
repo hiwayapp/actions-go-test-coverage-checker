@@ -93,10 +93,19 @@ const outputRowCoverage = (result: CoverResult): string[] => {
 
 const notifySlack = (slackWebhookUrl: string, message: string, isBelow: boolean): void => {
   try {
+    const runUrl = core.getInput('actionsRunUrl', {required: false});
     const webhook = new IncomingWebhook(slackWebhookUrl);
     (async () => {
       await webhook.send({
-        text: "Test coverage",
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `<${runUrl}|Test coverage>`,
+            },
+          },
+        ],
         attachments: [
           {
             color: isBelow ? 'danger' : 'good',
