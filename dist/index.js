@@ -5929,8 +5929,11 @@ const buildLowerThanThresholdLog = (coverage, threshold) => {
         `Threshold: ${threshold}%`
     ];
 };
-const buildTotalInfoLog = (coverage) => {
-    return `Total: ${coverage}%`;
+const buildTotalInfoLog = (coverage, threshold) => {
+    return [
+        `Total: ${coverage}%`,
+        `Threshold: ${threshold}%`
+    ];
 };
 const buildFuncCoverageLog = (path, funcName, coverage) => {
     return `path: ${path}, funcName: ${funcName}, coverage: ${coverage}%`;
@@ -5953,9 +5956,11 @@ const outputTotalCoverage = (result) => {
         return [logs, true];
     }
     else {
-        var log = buildTotalInfoLog(result.coverage);
-        core.info(log);
-        return [[log], false];
+        var logs = buildTotalInfoLog(result.coverage, threshold);
+        logs.forEach(function (log) {
+            core.info(log);
+        });
+        return [logs, false];
     }
 };
 const outputRowCoverage = (result) => {
