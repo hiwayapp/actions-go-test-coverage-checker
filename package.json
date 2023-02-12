@@ -2,7 +2,7 @@
   "name": "go-test-coverage-checker",
   "version": "1.0.0",
   "description": "Check test coverage",
-  "author": "@walkersumida",
+  "author": "@hiwayapp",
   "license": "MIT",
   "main": "src/index.js",
   "engines": {
@@ -29,7 +29,8 @@
   "homepage": "https://github.com/walkersumida/actions-go-test-coverage-checker#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
-    "@actions/github": "^5.1.1"
+    "@actions/github": "^5.1.1",
+    "@slack/webhook": "^6.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.8.3",

@@ -1,6 +1,6 @@
 name: "Go test coverage checker"
 description: "Check test coverage"
-author: "@walkersumida"
+author: "@hiwayapp"
 branding:
   icon: "code"
   color: "yellow"
@@ -14,8 +14,16 @@ inputs:
     default: "80"
     required: false
   logLevel:
-    description: "`error` or `info`"
+    description: "If set to `error`, if the coverage is below the threshold, it is treated as an error on CI. Other strings are not treated as an error and therefore do not result in errors on CI."
     default: "error"
+    required: false
+  slackWebhookUrl:
+    description: "Enter `slackWebhookUrl` and slack will notify you of the coverage results."
+    default: ""
+    required: false
+  actionsRunUrl:
+    description: ""
+    default: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     required: false
 runs:
   using: "node16"

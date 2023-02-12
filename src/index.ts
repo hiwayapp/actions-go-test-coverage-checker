@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import {spawnSync, SpawnSyncReturns} from 'child_process';
+import { IncomingWebhook } from '@slack/webhook';
 
 const COL_FILE_PATH = 0;
 const COL_FUNC_NAME = 1;
@@ -41,30 +42,82 @@ const outputTest = (result: SpawnSyncReturns<Buffer>): void => {
   }
 }
 
-const outputCoverage = (result: CoverResult): void => {
-  if (result.path == TOTAL_ROW) {
-    const threshold = core.getInput('threshold', {required: false});
-    if (result.coverage < Number(threshold)) {
-      const logLevel = core.getInput('logLevel', {required: false});
-      var logs = [
-        "Coverage is lower than threshold.",
-        `Total: ${result.coverage}%`,
-        `Threshold: ${threshold}%`
-      ];
-      if (logLevel == "error") {
-        logs.forEach(function(log) {
-          core.setFailed(log);
-        });
-      } else {
-        logs.forEach(function(log) {
-          core.info(log);
-        });
-      }
+const buildLowerThanThresholdLog = (coverage: number, threshold: string): string[] => {
+  return [
+    "Coverage is lower than threshold.",
+    `Total: ${coverage}%`,
+    `Threshold: ${threshold}%`
+  ];
+}
+
+const buildTotalInfoLog = (coverage: number, threshold: string): string[] => {
+  return [
+    `Total: ${coverage}%`,
+    `Threshold: ${threshold}%`
+  ];
+}
+
+const buildFuncCoverageLog = (path: string, funcName: string, coverage: number): string => {
+  return `path: ${path}, funcName: ${funcName}, coverage: ${coverage}%`;
+}
+
+const outputTotalCoverage = (result: CoverResult): [string[], boolean] => {
+  const threshold = core.getInput('threshold', {required: false});
+  if (result.coverage < Number(threshold)) {
+    const logLevel = core.getInput('logLevel', {required: false});
+    var logs = buildLowerThanThresholdLog(result.coverage, threshold);
+    if (logLevel == "error") {
+      logs.forEach(function(log) {
+        core.setFailed(log);
+      });
     } else {
-      core.info(`Total: ${result.coverage}%`);
+      logs.forEach(function(log) {
+        core.info(log);
+      });
     }
+    return [logs, true];
   } else {
-    core.info(`path: ${result.path}, funcName: ${result.funcName}, coverage: ${result.coverage}%`);
+    var logs = buildTotalInfoLog(result.coverage, threshold);
+    logs.forEach(function(log) {
+      core.info(log);
+    });
+    return [logs, false];
+  }
+}
+
+const outputRowCoverage = (result: CoverResult): string[] => {
+  var log = buildFuncCoverageLog(result.path, result.funcName, result.coverage);
+  core.info(log);
+  return [log];
+}
+
+const notifySlack = (slackWebhookUrl: string, message: string, isBelow: boolean): void => {
+  try {
+    const runUrl = core.getInput('actionsRunUrl', {required: false});
+    const webhook = new IncomingWebhook(slackWebhookUrl);
+    (async () => {
+      await webhook.send({
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `<${runUrl}|Test coverage>`,
+            },
+          },
+        ],
+        attachments: [
+          {
+            color: isBelow ? 'danger' : 'good',
+            text: message,
+          }
+        ]
+      });
+    })();
+  } catch (error: any) {
+    core.info(error.message);
+    core.info(error.stderr.toString());
+    core.info(error.stdout.toString());
   }
 }
 
@@ -102,14 +155,30 @@ const run = async () => {
     const coverageShell = buildCoverageShell();
     result = spawnSync(coverageShell, {shell: '/bin/bash'});
     const rows = result.stdout.toString().split(/\n/);
+    var allLogs: string[] = [];
+    var logs: string[] = [];
+    var isBelow = false;
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      if (row != "") {
-        const coverResult = parseCoverResult(row);
-        outputCoverage(coverResult);
+      if (row == "") {
+        continue
+      }
+
+      const coverResult = parseCoverResult(row);
+      if (coverResult.path == TOTAL_ROW) {
+        [logs, isBelow] = outputTotalCoverage(coverResult);
+        allLogs = logs.concat(allLogs);
+      } else {
+        allLogs = allLogs.concat(outputRowCoverage(coverResult));
       }
     }
     core.endGroup();
+
+    const slackWebhookUrl = core.getInput('slackWebhookUrl', {required: false});
+    if (slackWebhookUrl != "") {
+      const message = allLogs.join("\n");
+      notifySlack(slackWebhookUrl, message, isBelow);
+    }
   } catch (error: any) {
     core.setFailed(error.status);
     core.setFailed(error.message);
