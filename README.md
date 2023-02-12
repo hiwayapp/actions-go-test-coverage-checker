@@ -9,7 +9,7 @@
         with:
           go-version: '1.19'
       - name: Go test and check coverage
-        uses: hiwayapp/actions-go-test-coverage-checker@v1.2
+        uses: hiwayapp/actions-go-test-coverage-checker@v1.3
         with:
           threshold: 60
           logLevel: "info"
