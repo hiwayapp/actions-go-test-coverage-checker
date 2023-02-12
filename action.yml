@@ -14,11 +14,11 @@ inputs:
     default: "80"
     required: false
   logLevel:
-    description: "`error` or `info`"
+    description: "If set to `error`, if the coverage is below the threshold, it is treated as an error on CI. Other strings are not treated as an error and therefore do not result in errors on CI."
     default: "error"
     required: false
   slackWebhookUrl:
-    description: ""
+    description: "Enter `slackWebhookUrl` and slack will notify you of the coverage results."
     default: ""
     required: false
   actionsRunUrl:

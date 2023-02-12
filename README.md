@@ -12,5 +12,6 @@
         uses: hiwayapp/actions-go-test-coverage-checker@v1.2
         with:
           threshold: 60
-
+          logLevel: "info"
+          slackWebhookUrl: "https://hooks.slack.com/services/hoge/fuga/abcd"
 ```
