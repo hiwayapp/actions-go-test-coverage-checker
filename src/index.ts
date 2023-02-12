@@ -158,7 +158,7 @@ const run = async () => {
       const coverResult = parseCoverResult(row);
       if (coverResult.path == TOTAL_ROW) {
         [logs, isBelow] = outputTotalCoverage(coverResult);
-        allLogs = allLogs.concat(logs);
+        allLogs = logs.concat(allLogs);
       } else {
         allLogs = allLogs.concat(outputRowCoverage(coverResult));
       }
