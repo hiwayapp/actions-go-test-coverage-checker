@@ -1,5 +1,7 @@
 # Go test coverage checker
 
+<img width="630" alt="2023-02-12_17 20 41" src="https://user-images.githubusercontent.com/12683375/218300471-dae4073f-79d2-45ab-8f40-5a163bef04ff.png">
+
 ## Example workflow
 
 ```yaml
