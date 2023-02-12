@@ -1,6 +1,6 @@
 name: "Go test coverage checker"
 description: "Check test coverage"
-author: "@walkersumida"
+author: "@hiwayapp"
 branding:
   icon: "code"
   color: "yellow"

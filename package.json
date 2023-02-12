@@ -2,7 +2,7 @@
   "name": "go-test-coverage-checker",
   "version": "1.0.0",
   "description": "Check test coverage",
-  "author": "@walkersumida",
+  "author": "@hiwayapp",
   "license": "MIT",
   "main": "src/index.js",
   "engines": {
